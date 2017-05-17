@@ -1,0 +1,533 @@
+---
+title: "ERD data exploration"
+author: "Heather"
+date: "11/21/2016"
+output: html_document
+---
+1. Load the libraries, define global objects
+```{r echo=FALSE}
+library(raster)
+library(sp)
+library(chron)
+library(rgdal)
+library(ncdf4)
+
+path_grd='/Volumes/SeaGate/ERD_DOM/ncdf/aspect_filtered.xyz'
+x=read.table(path_grd)
+coordinates(x)=~V1+V2
+template=rasterFromXYZ(x)
+
+path_grd='/Volumes/SeaGate/ERD_DOM/ncdf/aspectnan.xyz'
+x=read.table(path_grd)
+coordinates(x)=~V1+V2
+template_small=rasterFromXYZ(x)  ##use this as template raster for 0.01667 resolution
+```
+
+                                      Parent folder: /ncdf/
+                                      
+                                      
+                                      
+
+2. File: aspect_filtered.xyz  (get attributes and plot)
+
+```{r echo=FALSE}
+path_grd='/Volumes/SeaGate/ERD_DOM/ncdf/aspect_filtered.xyz'
+x=read.table(path_grd)
+coordinates(x)=~V1+V2
+y=rasterFromXYZ(x)
+y
+plot(y)
+```
+
+3. File: aspectnan.xyz  (get attributes and plot)
+```{r echo=FALSE}
+path_grd='/Volumes/SeaGate/ERD_DOM/ncdf/aspectnan.xyz'
+x=read.table(path_grd)
+coordinates(x)=~V1+V2
+y=rasterFromXYZ(x)  ##use this as template raster for 0.01667 resolution
+y
+plot(y)
+```
+
+4. File: aviso_delayed_time_madt_h_DATE.nc  (get attributes and plot)
+```{r echo=FALSE}
+path_nc='/Volumes/SeaGate/ERD_DOM/ncdf/aviso_delayed_time_madt_h_1993-01-01.nc'
+nc=nc_open(path_nc)
+dname="adt"  ########### change for each netcdf
+lon <- ncvar_get(nc, "longitude") # define longitude
+nlon <- dim(lon)
+lat <- ncvar_get(nc, "latitude", verbose = F) # define latitude
+nlat <- dim(lat)
+tmp.array <- ncvar_get(nc, dname)
+tmp.vec.long <- as.vector(tmp.array)
+tmp.mat <- matrix(tmp.vec.long, nrow = nlon * nlat, ncol = 1)
+lonlat <- expand.grid(lon, lat)
+names(lonlat) <- c("lon","lat")
+tmp.df02 <- data.frame(tmp.mat)
+tmp.df02 <- cbind(lonlat, tmp.df02)
+coordinates(tmp.df02)=~lon+lat
+r=rasterize(tmp.df02,template,field="tmp.mat",fun=mean)
+nc
+r
+plot(r)
+```
+
+5. File: aviso_delayed_time_madt_u_DATE.nc (get attributes and plot)
+A. Variable 1: Geostrophic velocity anomalies: zonal component (eastward water velocity)
+
+```{r echo=FALSE}
+path_nc='/Volumes/SeaGate/ERD_DOM/ncdf/aviso_delayed_time_madt_u_1993-01-01.nc'
+nc=nc_open(path_nc)
+dname="u"  ########### change for each netcdf
+lon <- ncvar_get(nc, "longitude") # define longitude
+nlon <- dim(lon)
+lat <- ncvar_get(nc, "latitude", verbose = F) # define latitude
+nlat <- dim(lat)
+tmp.array <- ncvar_get(nc, dname)
+tmp.vec.long <- as.vector(tmp.array)
+tmp.mat <- matrix(tmp.vec.long, nrow = nlon * nlat, ncol = 1)
+lonlat <- expand.grid(lon, lat)
+names(lonlat) <- c("lon","lat")
+tmp.df02 <- data.frame(tmp.mat)
+tmp.df02 <- cbind(lonlat, tmp.df02)
+coordinates(tmp.df02)=~lon+lat
+r=rasterize(tmp.df02,template,field="tmp.mat",fun=mean)
+nc
+r
+plot(r)
+```
+
+5. File: aviso_delayed_time_madt_u_DATE.nc (get attributes and plot)
+B. Variable 1: Geostrophic velocity anomalies: meridian component (northward water velocity)
+
+```{r echo=FALSE}
+path_nc='/Volumes/SeaGate/ERD_DOM/ncdf/aviso_delayed_time_madt_u_1993-01-01.nc'
+nc=nc_open(path_nc)
+dname="v"  ########### change for each netcdf
+lon <- ncvar_get(nc, "longitude") # define longitude
+nlon <- dim(lon)
+lat <- ncvar_get(nc, "latitude", verbose = F) # define latitude
+nlat <- dim(lat)
+tmp.array <- ncvar_get(nc, dname)
+tmp.vec.long <- as.vector(tmp.array)
+tmp.mat <- matrix(tmp.vec.long, nrow = nlon * nlat, ncol = 1)
+lonlat <- expand.grid(lon, lat)
+names(lonlat) <- c("lon","lat")
+tmp.df02 <- data.frame(tmp.mat)
+tmp.df02 <- cbind(lonlat, tmp.df02)
+coordinates(tmp.df02)=~lon+lat
+r=rasterize(tmp.df02,template,field="tmp.mat",fun=mean)
+nc
+r
+plot(r)
+```
+
+6. File: bathyrms.xyz (get attributes and plot)
+
+```{r echo=FALSE}
+path_grd='/Volumes/SeaGate/ERD_DOM/ncdf/bathyrms.xyz'
+x=read.table(path_grd)
+coordinates(x)=~V1+V2
+y=rasterFromXYZ(x)
+y
+plot(y)
+```
+
+7. File: bathyrms_blockmean.xyz (get attributes and plot)
+##### Keep working on this one. I think it's slope, aspect, rms, depth, others??
+
+```{r echo=FALSE}
+path_grd='/Volumes/SeaGate/ERD_DOM/ncdf/bathyrms_blockmean.xyz'
+x=read.table(path_grd)
+coordinates(x)=~V1+V2
+a=rasterize(x,template_small,field="V3",fun=mean)  ## irregular grid, have to switch it up
+a
+plot(a)
+#b=raster('/Volumes/SeaGate/ERD_DOM/ncdf/bathyrms_blockmean.xyz',varname="V3")
+```
+
+8. File: etopo180_48d2_23d2_fc23.nc (get attributes and plot)
+(Bathymetry)
+
+```{r echo=FALSE}
+path_nc='/Volumes/SeaGate/ERD_DOM/ncdf/Bight/etopo180_48d2_23d2_fc23.nc'
+nc=nc_open(path_nc)
+b=raster('/Volumes/SeaGate/ERD_DOM/ncdf/Bight/etopo180_48d2_23d2_fc23.nc',varname="altitude")
+nc
+b
+plot(b)
+```
+
+9. File: jplG1SST_DATE.nc (get attributes and plot)
+(Analysed Sea Surface Temperature, 1km SST blended from 8 satellite observations (GHRSST))
+
+```{r echo=FALSE}
+path_nc='/Volumes/SeaGate/ERD_DOM/ncdf/Bight/jplG1SST_2012-01-01.nc'
+nc=nc_open(path_nc)
+dname="SST"  ########### change for each netcdf
+b=raster(path_nc,varname="SST")
+nc
+b
+plot(b)
+```
+
+10. File: nodcPH2sstd1day_DATE.nc (get attributes and plot)
+(Sea Surface Temperature, skin only, AVHRR)
+
+```{r echo=FALSE}
+path_nc='/Volumes/SeaGate/ERD_DOM/ncdf/Bight/nodcPH2sstd1day_1990-05-01.nc'
+nc=nc_open(path_nc)
+dname="sea_surface_temperature"  ########### change for each netcdf
+lon <- ncvar_get(nc, "longitude") # define longitude
+nlon <- dim(lon)
+lat <- ncvar_get(nc, "latitude", verbose = F) # define latitude
+nlat <- dim(lat)
+tmp.array <- ncvar_get(nc, dname)
+tmp.vec.long <- as.vector(tmp.array)
+tmp.mat <- matrix(tmp.vec.long, nrow = nlon * nlat, ncol = 1)
+lonlat <- expand.grid(lon, lat)
+names(lonlat) <- c("lon","lat")
+tmp.df02 <- data.frame(tmp.mat)
+tmp.df02 <- cbind(lonlat, tmp.df02)
+coordinates(tmp.df02)=~lon+lat
+template2=raster()
+res(template2)=0.0417
+ncol(template2)=nlon
+nrow(template2)=nlat
+xmin(template2)=-120.97917175293
+xmax(template2)=-115.97917175293
+ymin(template2)=29.9791717529297
+ymax(template2)=34.9791717529297
+r=rasterize(tmp.df02,template2,field="tmp.mat",fun=mean)
+nc
+r
+plot(r)
+```
+
+11. File: etopo-bight-sd.nc (get attributes and plot)
+(Standard deviation of topography, calculated over space using a 3x3 roving window)
+
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf/Bight/sd/etopo-bight-sd.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="layer")
+nc
+r
+plot(r)
+```
+
+12. File: jplG1-sd-2012-01-01.nc (get attributes and plot)
+(standard deviation of GHRSST, 3x3 roving window) ##this layer comes in upside, need to flip (same as 13 below, but at finer resolution (0.009980044))
+
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf/Bight/sd/jplG1-sd-2012-01-01.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="layer")
+nc
+r
+plot(r)
+```
+
+13. File: jplG1-sd-regrid2012-01-01.nc (get attributes and plot)
+(standard deviation of GHRSST, 3x3 roving window) ## same as above (12) but at 0.01666667 resolution
+
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf/Bight/sd/jplG1-sd-regrid2012-01-01.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="layer")
+nc
+r
+plot(r)
+```
+
+14. File: nodcPH2-sd-1990-01-01.nc (get attributes and plot)
+standard deviation...of what? look up..  RESOLUTION: 0.04132231
+
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf/Bight/sd/nodcPH2-sd-1990-01-01.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="layer")
+nc
+r
+plot(r)
+```
+
+15. File: nodcPH2-sd-regrid1990-01-01.nc (get attributes and plot)
+standard deviation...of what? look up..  RESOLUTION: 0.01666667 (same as above but finer)
+
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf/Bight/sd/nodcPH2-sd-regrid1990-01-01.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="layer")
+nc
+r
+plot(r)
+```
+
+16. File: depth_filtered.xyz (get attributes and plot)
+Depth at res of 0.25 - - find source
+
+```{r echo=FALSE}
+path_grd="/Volumes/SeaGate/ERD_DOM/ncdf/depth_filtered.xyz"
+x=read.table(path_grd)
+coordinates(x)=~V1+V2
+y=rasterFromXYZ(x)
+y
+plot(y)
+```
+
+17. File: depth.xyz (get attributes and plot)
+Depth at res of 0.01667 - - find source
+
+```{r echo=FALSE}
+path_grd="/Volumes/SeaGate/ERD_DOM/ncdf/depth.xyz"
+x=read.table(path_grd)
+coordinates(x)=~V1+V2
+y=rasterFromXYZ(x)
+y
+plot(y)
+```
+
+18. File: depthnan.xyz (get attributes and plot)
+Depth at res of 0.01667 - - find source, SAME AS ABOVE I BELIEVE
+
+```{r echo=FALSE}
+path_grd="/Volumes/SeaGate/ERD_DOM/ncdf/depth.xyz"
+x=read.table(path_grd)
+coordinates(x)=~V1+V2
+y=rasterFromXYZ(x)
+y
+plot(y)
+```
+
+19. File: erdMBchla8day_2013-10-12.nc (get attributes and plot)
+RESOLUTION: 0.01666667, MODIS CHLA, need to flip
+
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf/erdMBchla8day_2013-10-12.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="chlorophyll")
+nc
+r
+plot(r)
+```
+
+20. File: erdPHssta8day_1981-09-02.nc (get attributes and plot)
+RESOLUTION: 0.04394531, pathfinder SST
+
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf/erdPHssta8day_1981-09-02.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="sst")
+nc
+r
+plot(r)
+```
+
+21. File: erdSHchla8day_1998-01-05.nc (get attributes and plot)
+RESOLUTION: 0.0125, SeaWiFS chla (Chlorophyll-a, Orbview-2 SeaWiFS, 0.0125°, West US (8 Day Composite))
+
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf/erdSHchla8day_1998-01-05.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="chlorophyll")
+nc
+r
+plot(r)
+```
+
+22. File: erdSWchla8day_1997-09-02.nc (get attributes and plot)
+RESOLUTION: 0.08335263, SeaWiFS chla (Chlorophyll-a, Orbview-2 SeaWiFS, Global (8 Day Composite))
+
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf/erdSWchla8day_1997-09-02.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="chlorophyll")
+nc
+r
+plot(r)
+```
+
+23. File: etopo360.nc (get attributes and plot)
+RESOLUTION: 0.0166667 degrees, Topography, ETOPO1, 0.0166667 degrees, Global (longitude 0 to 360), (Ice Sheet Surface)
+
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf/etopo360.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="altitude")
+nc
+r
+plot(r)
+```
+
+24. File: jplL4AvhrrOIv1fv2_1981-09-01.nc (get attributes and plot)
+GHRSST Level 4 AVHRR_OI Global Blended Sea Surface Temperature Analysis, Global, 0.25 Degree, Daily
+
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf/jplL4AvhrrOIv1fv2_1981-09-01.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="analysed_sst")
+nc
+r
+plot(r)
+```
+
+25. File: ncdcOwDly_1987-07-09.nc (get attributes and plot)
+NOAA/NCDC Blended Daily 0.25-degree Sea Surface Winds
+
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf/ncdcOwDly_2000-07-09.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="v")
+nc
+r
+plot(r)
+```
+
+26. File: sd_blockmean.xyz (get attributes and plot)
+Depth at res of 0.01667 - - find source, possibly standard deviation but values look like depth values
+
+```{r echo=FALSE}
+path_grd="/Volumes/SeaGate/ERD_DOM/ncdf/sd_blockmean.xyz"
+x=read.table(path_grd)
+coordinates(x)=~V1+V2
+res(template_small)=0.01667
+a=rasterize(x,template_small,field="V3",fun=mean)  ## irregular grid, have to switch it up
+a
+plot(a)
+```
+
+27. File: slope_filtered.xyz (get attributes and plot)
+Slope at res of 0.25 - - find source
+
+```{r echo=FALSE}
+path_grd="/Volumes/SeaGate/ERD_DOM/ncdf/slope_filtered.xyz"
+x=read.table(path_grd)
+coordinates(x)=~V1+V2
+y=rasterFromXYZ(x)
+y
+plot(y)
+```
+
+28. File: slopenan.xyz (get attributes and plot)
+Slope at res of 0.01667 - - find source, same as above but with finer resolution
+
+```{r echo=FALSE}
+path_grd="/Volumes/SeaGate/ERD_DOM/ncdf/slopenan.xyz"
+x=read.table(path_grd)
+coordinates(x)=~V1+V2
+y=rasterFromXYZ(x)
+y
+plot(y)
+```
+
+
+
+                                      Parent folder: /ncdf_2015/
+                                      
+                                      
+29. File: dt_global_allsat_madt_h_20150101_20150914.nc (get attributes and plot)
+Delayed-Time Level-4 sea surface height above Geoid products from multi-satellite observations.
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf_2015/dt_global_allsat_madt_h_20150101_20150914.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="adt")
+nc
+r
+plot(r)
+```
+
+30. File: dt_global_allsat_madt_uv_20150101_20150914.nc (get attributes and plot)
+DT merged all satellites Global Ocean Gridded Absolute Geostrophic Velocities L4 product - surface_eastward_geostrophic_sea_water_velocity
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf_2015/dt_global_allsat_madt_uv_20150101_20150914.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="u")
+nc
+r
+plot(r)
+```
+
+31. File: dt_global_allsat_madt_uv_20150101_20150914.nc (get attributes and plot)
+DT merged all satellites Global Ocean Gridded Absolute Geostrophic Velocities L4 product - surface_northward_geostrophic_sea_water_velocity
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf_2015/dt_global_allsat_madt_uv_20150101_20150914.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="v")
+nc
+r
+plot(r)
+```
+
+32. File: dt_global_allsat_msla_h_20150101_20150914.nc (get attributes and plot)
+Delayed-Time Level-4 sea surface height above Mean Sea Surface products from multi-satellite observations.
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf_2015/dt_global_allsat_msla_h_20150101_20150914.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="sla")
+nc
+r
+plot(r)
+```
+
+33. File: erdMBchla8day_2015-01-01.nc (get attributes and plot)
+Chlorophyll-a, Aqua MODIS, NPP, 0.025 degrees, Pacific Ocean, EXPERIMENTAL (8 Day Composite)
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf_2015/erdMBchla8day_2015-01-01.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="chlorophyll")
+nc
+r
+plot(r)
+```
+
+34. File: jplG1SST_2015-01-01.nc (get attributes and plot)
+GHRSST Global 1-km Sea Surface Temperature (G1SST), Global, 0.01 Degree, Daily
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf_2015/jplG1SST_2015-01-01.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="SST")
+nc
+r
+plot(r)
+```
+
+35. File: jplL4AvhrrOIv1fv2_2015-01-01.nc (get attributes and plot)
+GHRSST Level 4 AVHRR_OI Global Blended Sea Surface Temperature Analysis, Global, 0.25 Degree, Daily
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf_2015/jplL4AvhrrOIv1fv2_2015-01-01.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="analysed_sst")
+nc
+r
+plot(r)
+```
+
+36. File: ncdcOwDly_2015-01-09.nc (get attributes and plot)
+NOAA/NCDC Blended Daily 0.25-degree Sea Surface Winds
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf_2015/ncdcOwDly_2015-01-09.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="v")
+nc
+r
+plot(r)
+```
+
+
+
+                                      Parent folder: /FSLE/
+                                      
+                                      
+29. File: dt_global_allsat_madt_fsle_20150907_20160414.nc (get attributes and plot)
+This dataset contains Backward-in-time FSLE product deduced from DT merged Global Ocean Gridded Absolute Geostrophic Velocities SSALTO/Duacs L4 product (version 2014) (FSLEs based on the maximum eigenvalue of the Cauchy-Green strain tensor)
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/FSLE/dt_global_allsat_madt_fsle_20150907_20160414.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="fsle_max")
+nc
+r
+plot(r)
+```
+
+

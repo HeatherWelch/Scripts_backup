@@ -1,0 +1,63 @@
+meta data
+
+######################################################################### MAXENT ################################################################################################
+
+A. maxent_prep.py
+
+	1. Renaming RS layers
+		01. define months
+		02. fix 10m layer names from 0000m to 0010m
+		03. fix all names to match variables in metadata3 while keeping time in name
+
+	2. fixing extent, cellsize, snap raster to a common dimension
+		04. extract to regional extent, snap raster and cell size to GHRSST layers
+
+B. maxent_prep_asc.py
+
+	1. Converting rasters from A2 into asciis
+		05. convert to asciis and put in correct folder in projections folder
+		05a. convert static rasters (btm and crm) to asciis and put in correct folder in projections folder
+		05a. convert static rasters (frac) to asciis and put in correct folder in projections folder
+
+C. maxent_prep_cellsize.py
+
+	1. Preparing static rasters to become asciis (A2 for static layers)
+		01. script to cycle through jenn's static layers, check cell size, covert if necessary, and distribute them to raster folders
+
+D. maxent_prep_associate_points_clim.py
+
+	1. Extracting points to climatological rasters
+		06. tool to extract temporally-explicit env values to biotic points
+
+E. maxent_prep_associate_points_static.py
+
+	1. Extracting points to static rasters
+		06a. tool to extract static bottom env values to biotic points
+
+	
+
+######################################################################### HYCOM ################################################################################################
+
+F. HYCOM.py
+
+	1. Delecting HYCOM GLBa0.08 layers from rs_rasters and projections folder
+		01. delete rasters
+		02. delete asciis
+
+G. hycom_MB
+	
+	1. Script created in model builder
+		01. Process: Create Climatological Rasters for HYCOM GLBa0.08 Equatorial 4D Variable
+
+H. HYCOM_download.py
+
+	1. Tool to batch the downloading of HYCOM GLBu0.08 climatological rasters
+
+
+
+
+########################################################################### MISC ################################################################################################
+
+I. project_remote_sensing.py
+	1. Tool to reproject to NAD83 rasters that were previously re-sized and re-extented using R script
+	

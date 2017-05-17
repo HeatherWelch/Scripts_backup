@@ -1,0 +1,161 @@
+---
+title: "ERD data exploration"
+author: "Heather"
+date: "11/21/2016"
+output: html_document
+---
+Load the libraries, define global objects
+```{r echo=FALSE}
+library(raster)
+library(sp)
+library(chron)
+library(rgdal)
+library(ncdf4)
+
+path_grd='/Volumes/SeaGate/ERD_DOM/ncdf/aspect_filtered.xyz'
+x=read.table(path_grd)
+coordinates(x)=~V1+V2
+template=rasterFromXYZ(x)
+
+path_grd='/Volumes/SeaGate/ERD_DOM/ncdf/aspectnan.xyz'
+x=read.table(path_grd)
+coordinates(x)=~V1+V2
+template_small=rasterFromXYZ(x)  ##use this as template raster for 0.01667 resolution
+```
+
+                                      Parent folder: /ncdf/
+                                      
+
+1(4.) File: aviso_delayed_time_madt_h_DATE.nc  (get attributes and plot)
+```{r echo=FALSE}
+path_nc='/Volumes/SeaGate/ERD_DOM/ncdf/aviso_delayed_time_madt_h_1993-01-01.nc'
+nc=nc_open(path_nc)
+dname="adt"  ########### change for each netcdf
+lon <- ncvar_get(nc, "longitude") # define longitude
+nlon <- dim(lon)
+lat <- ncvar_get(nc, "latitude", verbose = F) # define latitude
+nlat <- dim(lat)
+tmp.array <- ncvar_get(nc, dname)
+tmp.vec.long <- as.vector(tmp.array)
+tmp.mat <- matrix(tmp.vec.long, nrow = nlon * nlat, ncol = 1)
+lonlat <- expand.grid(lon, lat)
+names(lonlat) <- c("lon","lat")
+tmp.df02 <- data.frame(tmp.mat)
+tmp.df02 <- cbind(lonlat, tmp.df02)
+coordinates(tmp.df02)=~lon+lat
+r=rasterize(tmp.df02,template,field="tmp.mat",fun=mean)
+nc
+r
+plot(r)
+```
+
+2(5.) File: aviso_delayed_time_madt_u_DATE.nc (get attributes and plot)
+A. Variable 1: Geostrophic velocity anomalies: zonal component (eastward water velocity)
+
+```{r echo=FALSE}
+path_nc='/Volumes/SeaGate/ERD_DOM/ncdf/aviso_delayed_time_madt_u_1993-01-01.nc'
+nc=nc_open(path_nc)
+dname="u"  ########### change for each netcdf
+lon <- ncvar_get(nc, "longitude") # define longitude
+nlon <- dim(lon)
+lat <- ncvar_get(nc, "latitude", verbose = F) # define latitude
+nlat <- dim(lat)
+tmp.array <- ncvar_get(nc, dname)
+tmp.vec.long <- as.vector(tmp.array)
+tmp.mat <- matrix(tmp.vec.long, nrow = nlon * nlat, ncol = 1)
+lonlat <- expand.grid(lon, lat)
+names(lonlat) <- c("lon","lat")
+tmp.df02 <- data.frame(tmp.mat)
+tmp.df02 <- cbind(lonlat, tmp.df02)
+coordinates(tmp.df02)=~lon+lat
+r=rasterize(tmp.df02,template,field="tmp.mat",fun=mean)
+nc
+r
+plot(r)
+```
+
+3(5.) File: aviso_delayed_time_madt_u_DATE.nc (get attributes and plot)
+B. Variable 1: Geostrophic velocity anomalies: meridian component (northward water velocity)
+
+```{r echo=FALSE}
+path_nc='/Volumes/SeaGate/ERD_DOM/ncdf/aviso_delayed_time_madt_u_1993-01-01.nc'
+nc=nc_open(path_nc)
+dname="v"  ########### change for each netcdf
+lon <- ncvar_get(nc, "longitude") # define longitude
+nlon <- dim(lon)
+lat <- ncvar_get(nc, "latitude", verbose = F) # define latitude
+nlat <- dim(lat)
+tmp.array <- ncvar_get(nc, dname)
+tmp.vec.long <- as.vector(tmp.array)
+tmp.mat <- matrix(tmp.vec.long, nrow = nlon * nlat, ncol = 1)
+lonlat <- expand.grid(lon, lat)
+names(lonlat) <- c("lon","lat")
+tmp.df02 <- data.frame(tmp.mat)
+tmp.df02 <- cbind(lonlat, tmp.df02)
+coordinates(tmp.df02)=~lon+lat
+r=rasterize(tmp.df02,template,field="tmp.mat",fun=mean)
+nc
+r
+plot(r)
+```
+
+                                      Parent folder: /ncdf_2015/
+                                      
+                                      
+4(29.) File: dt_global_allsat_madt_h_20150101_20150914.nc (get attributes and plot)
+Delayed-Time Level-4 sea surface height above Geoid products from multi-satellite observations.
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf_2015/dt_global_allsat_madt_h_20150101_20150914.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="adt")
+nc
+r
+plot(r)
+```
+
+5(30.) File: dt_global_allsat_madt_uv_20150101_20150914.nc (get attributes and plot)
+DT merged all satellites Global Ocean Gridded Absolute Geostrophic Velocities L4 product - surface_eastward_geostrophic_sea_water_velocity
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf_2015/dt_global_allsat_madt_uv_20150101_20150914.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="u")
+nc
+r
+plot(r)
+```
+
+6(31.) File: dt_global_allsat_madt_uv_20150101_20150914.nc (get attributes and plot)
+DT merged all satellites Global Ocean Gridded Absolute Geostrophic Velocities L4 product - surface_northward_geostrophic_sea_water_velocity
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf_2015/dt_global_allsat_madt_uv_20150101_20150914.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="v")
+nc
+r
+plot(r)
+```
+
+7(32.) File: dt_global_allsat_msla_h_20150101_20150914.nc (get attributes and plot)
+Delayed-Time Level-4 sea surface height above Mean Sea Surface products from multi-satellite observations.
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf_2015/dt_global_allsat_msla_h_20150101_20150914.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="sla")
+nc
+r
+plot(r)
+```
+
+
+                                             Parent folder: /ncdf_ADD/AVISOraw
+8() File: dt_global_allsat_msla_h_19930101_20140106.nc (get attributes and plot)
+DT merged Global Ocean Gridded Sea Level Anomalies SSALTO/Duacs L4 product
+```{r echo=FALSE}
+pathnc="/Volumes/SeaGate/ERD_DOM/ncdf_ADD/AVISOraw/all-sat-DRT/h/1993/dt_global_allsat_msla_h_19930101_20140106.nc"
+nc=nc_open(pathnc)
+r=raster(pathnc,varname="sla")
+nc
+r
+plot(r)
+```
+ 
